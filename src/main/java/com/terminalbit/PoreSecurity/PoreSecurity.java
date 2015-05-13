@@ -23,15 +23,20 @@ import org.spongepowered.api.event.state.ServerStartedEvent;
 import org.spongepowered.api.plugin.Plugin;
 import org.spongepowered.api.service.command.CommandService;
 import org.spongepowered.api.service.config.ConfigDir;
+import org.spongepowered.api.text.Texts;
+import org.spongepowered.api.util.command.args.GenericArguments;
 import org.spongepowered.api.util.command.spec.CommandSpec;
-import static org.spongepowered.api.util.command.args.GenericArguments.*;
+
 import com.google.inject.Inject;
 import com.terminalbit.PoreSecurity.command.Login;
 import com.terminalbit.PoreSecurity.command.MainCommand;
 import com.terminalbit.PoreSecurity.command.SetPassword;
 
-@Plugin(id="PoreSecurity", name="Pore Security", version="0.1")
+@Plugin(id="PoreSecurity", name="PoreSecurity", version="0.1")
 public class PoreSecurity {
+	//Le access :D
+	public static PoreSecurity access;
+	
 	//Get the config root.
 	@Inject
 	@ConfigDir(sharedRoot = false)
@@ -61,6 +66,7 @@ public class PoreSecurity {
 	
 	@Subscribe
 	private void PreInitalization(PreInitializationEvent event){
+		access = this;
 		logger.info("Pore Security is starting...");
 		try{
 			//load teh configs!!!
@@ -96,14 +102,16 @@ public class PoreSecurity {
 		CommandService cD = game.getCommandDispatcher();
 		subCommands.put(Arrays.asList("login","l"), CommandSpec.builder()
 				.setExecutor(new Login())
+				.setArguments(GenericArguments.string(Texts.of("pass")))
 				.build());
 		subCommands.put(Arrays.asList("setpassword","setpass","sp"), CommandSpec.builder()
 				.setExecutor(new SetPassword())
+				.setArguments(GenericArguments.string(Texts.of("pass")))
 				.build());
 		CommandSpec mainCommand = CommandSpec.builder()
-				.setChildren(subCommands)
 				.setExecutor(new MainCommand())
-				.setArguments(none())
+				.setDescription(Texts.of("The main PoreSecurity command."))
+				.setChildren(subCommands)
 				.build();
 		cD.register(this, mainCommand, "ps", "poresecurity","poresec");
 	}
