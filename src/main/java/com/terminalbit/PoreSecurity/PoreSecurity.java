@@ -17,6 +17,8 @@ import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
 import org.spongepowered.api.event.Subscribe;
+import org.spongepowered.api.event.entity.living.human.HumanMoveEvent;
+import org.spongepowered.api.event.entity.player.PlayerMoveEvent;
 import org.spongepowered.api.event.state.InitializationEvent;
 import org.spongepowered.api.event.state.PreInitializationEvent;
 import org.spongepowered.api.event.state.ServerStartedEvent;
@@ -119,5 +121,28 @@ public class PoreSecurity {
 	@Subscribe
 	public void onServerStart(ServerStartedEvent event) {
 		logger.info("Pore Security v" + plugin.version() + " has started.");
+	}
+	
+	//Login-enforce not allowing people to log in
+	@Subscribe
+	public void onPlayerMove(PlayerMoveEvent event){
+		if(game.getServer().getOnlineMode()){
+			try {
+				config = userData.load();
+				if(!config.getNode("users",game.getServer().getPlayer(event.getUser().getName()).get().getIdentifier()).isVirtual()){
+					event.setCancelled(true);
+					event.getUser().sendMessage(Texts.of("Please log in!"));
+				}
+			} catch (IOException e) {}
+		}else{
+			try {
+				config = userData.load();
+				if(!config.getNode("users_offlinemode",event.getUser().getName()).isVirtual()){
+					event.setCancelled(true);
+					game.getServer().getPlayer(event.getUser().getName()).get().sendMessage(Texts.of("Please log in!"));
+				}
+			} catch (IOException e) {}
+		}
+		logger.info("moved");
 	}
 }

@@ -16,7 +16,11 @@ public class AccountManager {
 	public static boolean userRegistered(Player player) {
 		try{
 			config = userData.load();
-			return !config.getNode("users",player.getIdentifier()).isVirtual();
+			if(PoreSecurity.access.game.getServer().getOnlineMode()){
+				return !config.getNode("users",player.getIdentifier()).isVirtual();
+			}else{
+				return !config.getNode("users_offlinemode",player.getName()).isVirtual();
+			}
 		}catch(IOException e){
 			return false;
 		}
@@ -28,14 +32,26 @@ public class AccountManager {
 	public static boolean checkPassword(Player player, String pass){
 		try{
 			config = userData.load();
-			if(!config.getNode("users",player.getIdentifier()).isVirtual()){
-				if(config.getNode("users",player.getIdentifier(),"password").getString().equals(pass)){
-					return true;
+			if(PoreSecurity.access.game.getServer().getOnlineMode()){
+				if(!config.getNode("users",player.getIdentifier()).isVirtual()){
+					if(config.getNode("users",player.getIdentifier(),"password").getString().equals(pass)){
+						return true;
+					}else{
+						return false;
+					}
 				}else{
 					return false;
 				}
 			}else{
-				return false;
+				if(!config.getNode("users_offlinemode",player.getName()).isVirtual()){
+					if(config.getNode("users_offlinemode",player.getName(),"password").getString().equals(pass)){
+						return true;
+					}else{
+						return false;
+					}
+				}else{
+					return false;
+				}
 			}
 		}catch(IOException e){
 			return false;
@@ -44,7 +60,11 @@ public class AccountManager {
 	public static void setPassword(Player player, String pass){
 		try{
 			config = userData.load();
-			config.getNode("users",player.getIdentifier(),"password").setValue(pass);
+			if(PoreSecurity.access.game.getServer().getOnlineMode()){
+				config.getNode("users",player.getIdentifier(),"password").setValue(pass);
+			}else{
+				config.getNode("users_offlinemode",player.getName(),"password").setValue(pass);
+			}
 			userData.save(config);
 		}catch(IOException e){
 		}
